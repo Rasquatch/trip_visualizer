@@ -567,33 +567,6 @@
             };
         }
 
-        // Amtrak train estimates with actual route knowledge
-        function estimateTrain(distance) {
-            // Amtrak Northeast Corridor and other routes
-            if (distance < 80) return null; // Too short, bus is better
-            
-            let cost, time;
-            
-            // Northeast Corridor (higher speed, more expensive)
-            if (distance < 200) {
-                cost = 45 + (distance * 0.25); // ~$45-95
-                time = Math.round(distance / 70 * 60); // ~70 mph average
-            } else if (distance < 400) {
-                cost = 75 + (distance * 0.20); // ~$75-155
-                time = Math.round(distance / 65 * 60); // ~65 mph
-            } else {
-                // Longer routes (Palmetto, Crescent, etc)
-                cost = 120 + (distance * 0.15); // ~$120+
-                time = Math.round(distance / 55 * 60); // ~55 mph includes stops
-            }
-            
-            return { 
-                cost: Math.round(cost), 
-                time: time,
-                source: 'estimated'
-            };
-        }
-
         // Calculate fairness score (how equal the travel is for both people)
         function calculateScore(dataA, dataB) {
             const timeDiff = Math.abs(dataA.time - dataB.time);
@@ -639,18 +612,11 @@
             const flightA = estimateFlight(ORIGIN_A_AIRPORT, dest.airport, airportDistA);
             const flightB = estimateFlight(ORIGIN_B_AIRPORT, dest.airport, airportDistB);
             
-            // Train analysis - use straight-line distance (train routes roughly follow)
-            const trainDistA = calculateDistance(ORIGIN_A.lat, ORIGIN_A.lon, dest.lat, dest.lon);
-            const trainDistB = calculateDistance(ORIGIN_B.lat, ORIGIN_B.lon, dest.lat, dest.lon);
-            const trainA = estimateTrain(trainDistA);
-            const trainB = estimateTrain(trainDistB);
-            
             // Calculate overall fairness score
             const driveScore = calculateScore(driveA, driveB);
             const flightScore = (flightA && flightB) ? calculateScore(flightA, flightB) : 0;
-            const trainScore = (trainA && trainB) ? calculateScore(trainA, trainB) : 0;
             
-            const overallScore = Math.max(driveScore, flightScore, trainScore);
+            const overallScore = Math.max(driveScore, flightScore);
             
             return {
                 name: dest.name,
@@ -658,8 +624,7 @@
                 airport: dest.airport,
                 score: overallScore,
                 driving: { personA: driveA, personB: driveB },
-                flights: (flightA && flightB) ? { personA: flightA, personB: flightB } : null,
-                trains: (trainA && trainB) ? { personA: trainA, personB: trainB } : null
+                flights: (flightA && flightB) ? { personA: flightA, personB: flightB } : null
             };
         }
 
@@ -754,29 +719,6 @@
                                     Too short for flight<br>
                                     <span style="font-size: 11px;">(${dest.airport.code} nearest)</span>
                                 </div>
-                            </div>
-                            `}
-                            
-                            ${dest.trains ? `
-                            <div class="mode-card">
-                                <div class="mode-icon">🚂</div>
-                                <div class="mode-name">Train <span style="font-size: 10px; color: #888;">(Estimated)</span></div>
-                                <div class="person-a">
-                                    <span>From NC:</span>
-                                    <span class="time">${formatTime(dest.trains.personA.time)}</span>
-                                    <span class="cost">$${dest.trains.personA.cost}</span>
-                                </div>
-                                <div class="person-b">
-                                    <span>From NY:</span>
-                                    <span class="time">${formatTime(dest.trains.personB.time)}</span>
-                                    <span class="cost">$${dest.trains.personB.cost}</span>
-                                </div>
-                            </div>
-                            ` : `
-                            <div class="mode-card" style="opacity: 0.5;">
-                                <div class="mode-icon">🚂</div>
-                                <div class="mode-name">Train</div>
-                                <div style="color: #999; padding: 20px;">No direct route</div>
                             </div>
                             `}
                         </div>
