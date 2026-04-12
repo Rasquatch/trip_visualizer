@@ -350,6 +350,26 @@
             <strong>Tip:</strong> Use the ⚙️ Settings button to add API keys for real-time data, or 👥 People button to change locations.
         </div>
 
+        <div class="filter-panel" style="background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                <div style="flex: 1; min-width: 300px;">
+                    <label style="display: block; font-weight: bold; color: #555; margin-bottom: 8px;">
+                        🚗 Max Driving Time (each way): <span id="driveTimeValue" style="color: #667eea;">8 hours</span>
+                    </label>
+                    <input type="range" id="maxDriveTime" min="2" max="16" value="8" step="0.5" 
+                        style="width: 100%; height: 8px; border-radius: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); cursor: pointer;"
+                        oninput="updateDriveTimeDisplay(this.value)" onchange="updateData()">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #888; margin-top: 4px;">
+                        <span>2h</span><span>4h</span><span>6h</span><span>8h</span><span>10h</span><span>12h</span><span>14h</span><span>16h</span>
+                    </div>
+                </div>
+                <div style="text-align: right; font-size: 12px; color: #666;">
+                    <div>Destinations within <strong id="driveTimeValue2">8 hours</strong> drive for both</div>
+                    <div style="font-size: 11px; color: #888; margin-top: 2px;">Slider updates automatically</div>
+                </div>
+            </div>
+        </div>
+
         <div class="controls">
             <button onclick="updateData()" class="update-btn">🔄 Update / Search Destinations</button>
             <div class="api-status">
@@ -579,9 +599,16 @@
             return Math.round((timeScore + costScore) / 2);
         }
 
+        // Update drive time display
+        function updateDriveTimeDisplay(value) {
+            document.getElementById('driveTimeValue').textContent = value + ' hours';
+            document.getElementById('driveTimeValue2').textContent = value + ' hours';
+        }
+
         // Analyze a destination
         async function analyzeDestination(dest) {
             const orsKey = localStorage.getItem('ors_api_key');
+            const maxDriveMinutes = parseFloat(document.getElementById('maxDriveTime').value) * 60;
             
             // Try to get real driving data from API, fallback to estimates
             let driveA, driveB;
@@ -618,11 +645,15 @@
             
             const overallScore = Math.max(driveScore, flightScore);
             
+            // Check if within max driving time for BOTH people
+            const withinDriveTime = driveA.time <= maxDriveMinutes && driveB.time <= maxDriveMinutes;
+            
             return {
                 name: dest.name,
                 state: dest.state,
                 airport: dest.airport,
                 score: overallScore,
+                withinDriveTime: withinDriveTime,
                 driving: { personA: driveA, personB: driveB },
                 flights: (flightA && flightB) ? { personA: flightA, personB: flightB } : null
             };
@@ -639,13 +670,38 @@
         // Render results
         function renderResults(results) {
             const container = document.getElementById('results');
+            const maxDriveMinutes = parseFloat(document.getElementById('maxDriveTime').value) * 60;
+            
+            // Filter to only show destinations within max drive time
+            const filteredResults = results.filter(r => r.withinDriveTime);
+            
+            // If no results match, show a message
+            if (filteredResults.length === 0) {
+                container.innerHTML = `
+                    <div class="error" style="text-align: center; padding: 40px;">
+                        <strong>No destinations found within ${document.getElementById('maxDriveTime').value} hours driving time.</strong><br><br>
+                        Try increasing the max driving time slider above, or consider flying!<br><br>
+                        <button onclick="document.getElementById('maxDriveTime').value=12; updateDriveTimeDisplay(12); updateData();" 
+                            style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 20px; cursor: pointer;">
+                            Try 12 hours
+                        </button>
+                    </div>
+                `;
+                return;
+            }
             
             // Sort by score
-            results.sort((a, b) => b.score - a.score);
+            filteredResults.sort((a, b) => b.score - a.score);
             
-            let html = `<h2 style="margin-bottom: 20px;">🏆 Top ${results.length} Destinations (Ranked by Fairness)</h2>`;
+            let html = `<h2 style="margin-bottom: 20px;">🏆 Top ${filteredResults.length} Destinations Within ${document.getElementById('maxDriveTime').value}h Drive (Ranked by Fairness)</h2>`;
             
-            results.forEach((dest, index) => {
+            if (filteredResults.length < results.length) {
+                html += `<div style="background: #fff3e0; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #e65100;">
+                    📊 ${results.length - filteredResults.length} destinations hidden (exceed max drive time). Increase slider to see more.
+                </div>`;
+            }
+            
+            filteredResults.forEach((dest, index) => {
                 const badge = dest.score >= 80 ? '🥇 Excellent' : 
                              dest.score >= 60 ? '🥈 Good' : 
                              dest.score >= 40 ? '🥉 Fair' : '⚠️ Poor';
