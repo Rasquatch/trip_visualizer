@@ -71,7 +71,7 @@ const sampleDestinations = [
   }
 ];
 
-export default function InteractiveMap({ destinations = sampleDestinations, filters, onFiltersChange }) {
+export default function InteractiveMap({ destinations, filters, onFiltersChange }) {
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [mapCenter, setMapCenter] = useState([39.8283, -98.5795]); // Center of US
   const [mapZoom, setMapZoom] = useState(4);
@@ -84,6 +84,10 @@ export default function InteractiveMap({ destinations = sampleDestinations, filt
     
     return timeDiff <= filters.timeTolerance && costDiff <= filters.costTolerance;
   });
+
+  // Debug: Log filtered destinations
+  console.log('Filtered destinations:', filteredDestinations.length, 'of', destinations.length);
+  console.log('Filters:', filters);
 
   const getMarkerColor = (score) => {
     if (score >= 0.9) return 'bg-green-500';
@@ -120,6 +124,9 @@ export default function InteractiveMap({ destinations = sampleDestinations, filt
             >
               +
             </button>
+            <span className="px-2 py-1 text-sm text-gray-600 border rounded">
+              {mapZoom}x
+            </span>
             <button
               onClick={() => setMapZoom(Math.max(2, mapZoom - 1))}
               className="p-2 text-gray-600 hover:text-gray-900 border rounded"
@@ -182,15 +189,32 @@ export default function InteractiveMap({ destinations = sampleDestinations, filt
         </div>
 
         {/* Simple Map Visualization */}
-        <div className="bg-gray-100 rounded-lg h-96 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-green-100">
-            {/* Map placeholder - in real implementation would use Leaflet or similar */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-600 font-medium">Interactive Map</p>
-                <p className="text-sm text-gray-500">Showing {filteredDestinations.length} destinations</p>
+        <div className="bg-gradient-to-br from-blue-50 via-white to-green-50 rounded-lg h-96 relative overflow-hidden border-2 border-gray-200">
+          {/* Map background pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="h-full w-full" style={{
+              backgroundImage: `repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(59, 130, 246, 0.03) 10px,
+                transparent 10px,
+                rgba(59, 130, 246, 0.03) 10px
+              )`,
+              backgroundSize: '28px 28px'
+            }}></div>
+          </div>
+          
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-100/30 to-green-100/30">
+            {/* Map title overlay */}
+            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg">
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-5 w-5 text-blue-600" />
+                <h3 className="text-lg font-bold text-gray-900">Travel Map</h3>
               </div>
+              <p className="text-sm text-gray-600 mt-1">
+                {filteredDestinations.length} matching destinations • Zoom: {mapZoom}x
+              </p>
             </div>
 
             {/* Origin markers */}
@@ -209,38 +233,54 @@ export default function InteractiveMap({ destinations = sampleDestinations, filt
             </div>
 
             {/* Destination markers */}
-            {filteredDestinations.map((dest, index) => (
-              <div
-                key={dest.id}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
-                style={{
-                  top: `${30 + (index * 15)}%`,
-                  left: `${40 + (index * 10)}%`
-                }}
-                onClick={() => setSelectedDestination(dest)}
-              >
-                <div className={`${getMarkerColor(dest.scores.overall)} rounded-full p-2 shadow-lg`}>
-                  <Star className="h-3 w-3 text-white" />
+            {filteredDestinations.slice(0, 8).map((dest, index) => {
+              const row = Math.floor(index / 4);
+              const col = index % 4;
+              return (
+                <div
+                  key={dest.id}
+                  className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-200 hover:scale-110"
+                  style={{
+                    top: `${15 + (row * 18)}%`,
+                    left: `${10 + (col * 22)}%`,
+                    zIndex: 10
+                  }}
+                  onClick={() => setSelectedDestination(dest)}
+                >
+                  <div className={`${getMarkerColor(dest.scores.overall)} rounded-full p-3 shadow-lg animate-pulse`}>
+                    <Star className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="bg-white rounded px-3 py-2 text-xs font-medium mt-2 shadow-lg whitespace-nowrap border-2 border-gray-200">
+                    {dest.name}
+                  </div>
+                  <div className="text-center mt-1">
+                    <span className={`text-xs font-bold ${getMarkerColor(dest.scores.overall).replace('bg-', 'text-')}`}>
+                      {Math.round(dest.scores.overall * 100)}%
+                    </span>
+                  </div>
                 </div>
-                <div className="bg-white rounded px-2 py-1 text-xs font-medium mt-1 shadow whitespace-nowrap">
-                  {dest.name}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Selected Destination Details */}
       {selectedDestination && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-xl p-6 border-2 border-blue-200 animate-in slide-in-from-bottom duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">{selectedDestination.name}</h3>
+            <div className="flex items-center space-x-3">
+              <div className={`w-3 h-3 rounded-full ${getMarkerColor(selectedDestination.scores.overall)} animate-pulse`}></div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">{selectedDestination.name}</h3>
+                <p className="text-sm text-gray-500">Perfect match for your trip!</p>
+              </div>
+            </div>
             <button
               onClick={() => setSelectedDestination(null)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
             >
-              ×
+              <span className="text-lg">×</span>
             </button>
           </div>
 
@@ -339,24 +379,39 @@ export default function InteractiveMap({ destinations = sampleDestinations, filt
       )}
 
       {/* Legend */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">Match Quality</h4>
-        <div className="flex items-center space-x-6 text-sm">
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span className="text-gray-600">Excellent (90%+)</span>
+      <div className="bg-white rounded-lg shadow p-4 border-2 border-gray-100">
+        <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+          <Star className="h-4 w-4 mr-2 text-yellow-500" />
+          Match Quality
+        </h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg border border-green-200">
+            <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+            <div>
+              <span className="font-semibold text-green-900">Excellent</span>
+              <span className="text-green-700">90%+ Match</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-            <span className="text-gray-600">Good (80-89%)</span>
+          <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+            <div>
+              <span className="font-semibold text-blue-900">Good</span>
+              <span className="text-blue-700">80-89% Match</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-            <span className="text-gray-600">Fair (70-79%)</span>
+          <div className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+            <div>
+              <span className="font-semibold text-yellow-900">Fair</span>
+              <span className="text-yellow-700">70-79% Match</span>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span className="text-gray-600">Poor (&lt;70%)</span>
+          <div className="flex items-center space-x-3 p-3 bg-red-50 rounded-lg border border-red-200">
+            <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+            <div>
+              <span className="font-semibold text-red-900">Poor</span>
+              <span className="text-red-700">&lt;70% Match</span>
+            </div>
           </div>
         </div>
       </div>

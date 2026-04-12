@@ -4,6 +4,9 @@ import { Car, Clock, DollarSign, Navigation, TrendingUp, MapPin } from 'lucide-r
 export default function DrivingComparison({ destinations, filters }) {
   const [sortBy, setSortBy] = useState('overall'); // overall, timeDiff, costDiff, distance
   
+  // Debug: Log component render
+  console.log('DrivingComparison rendering with', destinations.length, 'destinations');
+  
   // Filter destinations for driving analysis
   const drivingDestinations = destinations.filter(dest => {
     const timeDiff = Math.abs(dest.driving.fromFuquay.time - dest.driving.fromFarmingdale.time);
@@ -54,12 +57,14 @@ export default function DrivingComparison({ destinations, filters }) {
   return (
     <div className="space-y-6">
       {/* Header and Controls */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg shadow-lg p-6 border-2 border-green-200">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <Car className="h-8 w-8 text-green-600" />
+            <div className="bg-green-600 rounded-lg p-3">
+              <Car className="h-8 w-8 text-white" />
+            </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Driving Analysis</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Driving Analysis</h2>
               <p className="text-sm text-gray-600">
                 Compare road trip destinations with balanced travel times
               </p>
@@ -95,21 +100,23 @@ export default function DrivingComparison({ destinations, filters }) {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-lg shadow-lg p-4 border-2 border-green-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Destinations</p>
-              <p className="text-2xl font-bold text-gray-900">{drivingDestinations.length}</p>
+              <p className="text-sm font-medium text-green-700">Total Destinations</p>
+              <p className="text-3xl font-bold text-green-900">{drivingDestinations.length}</p>
             </div>
-            <MapPin className="h-8 w-8 text-gray-400" />
+            <div className="bg-green-600 rounded-full p-3">
+              <MapPin className="h-6 w-6 text-white" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg shadow-lg p-4 border-2 border-blue-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Avg Time Difference</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-blue-700">Avg Time Difference</p>
+              <p className="text-3xl font-bold text-blue-900">
                 {drivingDestinations.length > 0 
                   ? Math.round(drivingDestinations.reduce((sum, dest) => 
                       sum + Math.abs(dest.driving.fromFuquay.time - dest.driving.fromFarmingdale.time), 0
@@ -117,15 +124,17 @@ export default function DrivingComparison({ destinations, filters }) {
                   : 0} min
               </p>
             </div>
-            <Clock className="h-8 w-8 text-gray-400" />
+            <div className="bg-blue-600 rounded-full p-3">
+              <Clock className="h-6 w-6 text-white" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-gradient-to-br from-yellow-50 to-orange-100 rounded-lg shadow-lg p-4 border-2 border-yellow-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Avg Cost Difference</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-yellow-700">Avg Cost Difference</p>
+              <p className="text-3xl font-bold text-yellow-900">
                 ${drivingDestinations.length > 0 
                   ? Math.round(drivingDestinations.reduce((sum, dest) => 
                       sum + Math.abs(dest.driving.fromFuquay.cost - dest.driving.fromFarmingdale.cost), 0
@@ -133,19 +142,23 @@ export default function DrivingComparison({ destinations, filters }) {
                   : 0}
               </p>
             </div>
-            <DollarSign className="h-8 w-8 text-gray-400" />
+            <div className="bg-yellow-600 rounded-full p-3">
+              <DollarSign className="h-6 w-6 text-white" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-gradient-to-br from-purple-50 to-pink-100 rounded-lg shadow-lg p-4 border-2 border-purple-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Excellent Matches</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm font-medium text-purple-700">Excellent Matches</p>
+              <p className="text-3xl font-bold text-purple-900">
                 {drivingDestinations.filter(dest => dest.scores.overall >= 0.9).length}
               </p>
             </div>
-            <TrendingUp className="h-8 w-8 text-gray-400" />
+            <div className="bg-purple-600 rounded-full p-3">
+              <TrendingUp className="h-6 w-6 text-white" />
+            </div>
           </div>
         </div>
       </div>

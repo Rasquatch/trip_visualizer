@@ -1,13 +1,12 @@
 {
-  "name": "research-visualizer-hub",
+  "name": "trip-visualizer",
   "version": "1.0.0",
-  "description": "Research Hub with Trip Visualizer",
+  "description": "Travel comparison tool for finding optimal meeting destinations",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "validate": "node scripts/hub-gen.mjs . validate --fix --build"
+    "preview": "vite preview"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
