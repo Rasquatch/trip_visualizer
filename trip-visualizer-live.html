@@ -122,7 +122,7 @@
         }
         .travel-modes {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin-top: 20px;
         }
@@ -440,7 +440,10 @@
         
         // Origin airports (nearest major airports)
         const ORIGIN_A_AIRPORT = { code: "RDU", name: "Raleigh-Durham International", lat: 35.8776, lon: -78.7875 };
-        const ORIGIN_B_AIRPORT = { code: "JFK", name: "John F. Kennedy International", lat: 40.6413, lon: -73.7781 };
+        const ORIGIN_B_AIRPORTS = [
+            { code: "JFK", name: "John F. Kennedy International", lat: 40.6413, lon: -73.7781 },
+            { code: "ISP", name: "Long Island MacArthur (Islip)", lat: 40.7952, lon: -73.1024 }
+        ];
         
         // Sample destinations to analyze with correct IATA airport codes
         const DESTINATIONS = [
@@ -547,8 +550,8 @@
                 flightTimeMinutes = 210;
             }
             
-            // Add gate time, security, boarding (typically 2-3 hours total)
-            const totalTime = flightTimeMinutes + 150; // 2.5 hours airport time
+            // Add gate time, security, boarding (typically 2 hours total)
+            const totalTime = flightTimeMinutes + 120; // 2 hours airport time
             
             // Seasonal variation simulation (±15%)
             const variation = 0.85 + (Math.random() * 0.3);
@@ -629,23 +632,25 @@
             
             // Flight analysis - use airport-to-airport distance for accuracy
             const airportDistA = calculateDistance(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon);
-            const airportDistB = calculateDistance(ORIGIN_B_AIRPORT.lat, ORIGIN_B_AIRPORT.lon, dest.airport.lat, dest.airport.lon);
+            
+            // For NY, check both JFK and ISP and pick the best option
+            let flightBOptions = ORIGIN_B_AIRPORTS.map(airport => {
+                const dist = calculateDistance(airport.lat, airport.lon, dest.airport.lat, dest.airport.lon);
+                const flight = estimateFlight(airport, dest.airport, dist);
+                return flight ? { ...flight, airportCode: airport.code, airportName: airport.name } : null;
+            }).filter(f => f !== null);
+            
+            // Pick the best NY flight (lowest total time, then lowest cost)
+            flightBOptions.sort((a, b) => (a.time - b.time) || (a.cost - b.cost));
+            const flightB = flightBOptions.length > 0 ? flightBOptions[0] : null;
             
             const flightA = estimateFlight(ORIGIN_A_AIRPORT, dest.airport, airportDistA);
-            const flightB = estimateFlight(ORIGIN_B_AIRPORT, dest.airport, airportDistB);
-            
-            // Train analysis - use straight-line distance (train routes roughly follow)
-            const trainDistA = calculateDistance(ORIGIN_A.lat, ORIGIN_A.lon, dest.lat, dest.lon);
-            const trainDistB = calculateDistance(ORIGIN_B.lat, ORIGIN_B.lon, dest.lat, dest.lon);
-            const trainA = estimateTrain(trainDistA);
-            const trainB = estimateTrain(trainDistB);
             
             // Calculate overall fairness score
             const driveScore = calculateScore(driveA, driveB);
             const flightScore = (flightA && flightB) ? calculateScore(flightA, flightB) : 0;
-            const trainScore = (trainA && trainB) ? calculateScore(trainA, trainB) : 0;
             
-            const overallScore = Math.max(driveScore, flightScore, trainScore);
+            const overallScore = Math.max(driveScore, flightScore);
             
             return {
                 name: dest.name,
@@ -653,8 +658,7 @@
                 airport: dest.airport,
                 score: overallScore,
                 driving: { personA: driveA, personB: driveB },
-                flights: (flightA && flightB) ? { personA: flightA, personB: flightB } : null,
-                trains: (trainA && trainB) ? { personA: trainA, personB: trainB } : null
+                flights: (flightA && flightB) ? { personA: flightA, personB: flightB } : null
             };
         }
 
@@ -725,7 +729,7 @@
                                 <div class="mode-icon">✈️</div>
                                 <div class="mode-name">Flight <span style="font-size: 10px; color: #888;">(Estimated)</span></div>
                                 <div style="font-size: 11px; color: #666; text-align: center; margin-bottom: 8px; padding: 4px; background: #f5f5f5; border-radius: 4px;">
-                                    ${dest.flights.personA.originCode} ✈️ ${dest.flights.personA.destCode} | ${dest.flights.personB.originCode} ✈️ ${dest.flights.personB.destCode}
+                                    ${dest.flights.personA.originCode} ✈️ ${dest.flights.personA.destCode} | ${dest.flights.personB.airportCode || dest.flights.personB.originCode} ✈️ ${dest.flights.personB.destCode}
                                 </div>
                                 <div class="person-a">
                                     <span>From NC:</span>
@@ -733,12 +737,12 @@
                                     <span class="cost">$${dest.flights.personA.cost}</span>
                                 </div>
                                 <div class="person-b">
-                                    <span>From NY:</span>
+                                    <span>From NY (${dest.flights.personB.airportCode || 'JFK'}):</span>
                                     <span class="time">${formatTime(dest.flights.personB.time)}</span>
                                     <span class="cost">$${dest.flights.personB.cost}</span>
                                 </div>
                                 <div style="font-size: 9px; color: #999; text-align: center; margin-top: 5px;">
-                                    Includes gate time + security (2.5hrs)
+                                    Includes gate time + security (2hrs)
                                 </div>
                             </div>
                             ` : `
@@ -752,28 +756,6 @@
                             </div>
                             `}
                             
-                            ${dest.trains ? `
-                            <div class="mode-card">
-                                <div class="mode-icon">🚂</div>
-                                <div class="mode-name">Train <span style="font-size: 10px; color: #888;">(Estimated)</span></div>
-                                <div class="person-a">
-                                    <span>From NC:</span>
-                                    <span class="time">${formatTime(dest.trains.personA.time)}</span>
-                                    <span class="cost">$${dest.trains.personA.cost}</span>
-                                </div>
-                                <div class="person-b">
-                                    <span>From NY:</span>
-                                    <span class="time">${formatTime(dest.trains.personB.time)}</span>
-                                    <span class="cost">$${dest.trains.personB.cost}</span>
-                                </div>
-                            </div>
-                            ` : `
-                            <div class="mode-card" style="opacity: 0.5;">
-                                <div class="mode-icon">🚂</div>
-                                <div class="mode-name">Train</div>
-                                <div style="color: #999; padding: 20px;">No direct route</div>
-                            </div>
-                            `}
                         </div>
                     </div>
                 `;
