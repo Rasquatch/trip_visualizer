@@ -207,25 +207,129 @@
             margin-bottom: 20px;
             border-radius: 5px;
         }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .header-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+        .header-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        .modal-row {
+            margin-bottom: 15px;
+        }
+        .modal-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .modal-row input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .modal-btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🗺️ Trip Visualizer</h1>
-        <p class="subtitle">Find optimal meeting destinations between two locations</p>
+        <div class="header">
+            <div>
+                <h1>🗺️ Trip Visualizer</h1>
+                <p class="subtitle">Find optimal meeting destinations between two locations</p>
+            </div>
+            <div class="header-buttons">
+                <button class="header-btn" onclick="toggleSettings()">⚙️ Settings</button>
+                <button class="header-btn" onclick="editPeople()">👥 People</button>
+            </div>
+        </div>
         
         <div class="origins">
-            <div class="origin-card">
+            <div class="origin-card" id="originACard">
                 <h3>📍 Person A</h3>
-                <p>Fuquay Varina, NC 27526</p>
+                <p id="originAText">Fuquay Varina, NC 27526</p>
             </div>
-            <div class="origin-card">
+            <div class="origin-card" id="originBCard">
                 <h3>📍 Person B</h3>
-                <p>Farmingdale, NY 11735</p>
+                <p id="originBText">Farmingdale, NY 11735</p>
             </div>
         </div>
 
-        <div class="config-panel">
+        <div id="configPanel" class="config-panel hidden">
             <div class="config-row">
                 <label>API Keys (optional):</label>
                 <input type="text" id="orsKey" placeholder="OpenRouteService API Key" class="api-key-input">
@@ -240,10 +344,10 @@
         </div>
 
         <div class="info-box">
-            <strong>ℹ️ How it works:</strong> This tool compares travel times/costs from both origins to potential destinations. 
-            Results are ranked by how "fair" the meeting point is (similar travel time and cost for both people).
+            <strong>ℹ️ How it works:</strong> Click "Update" to calculate travel times and costs from both locations to potential meeting destinations. 
+            Results are ranked by fairness (similar travel time/cost for both people).
             <br><br>
-            <strong>APIs used:</strong> OpenRouteService (driving), Sample data for flights/trains (API keys needed for live data)
+            <strong>Tip:</strong> Use the ⚙️ Settings button to add API keys for real-time data, or 👥 People button to change locations.
         </div>
 
         <div class="controls">
@@ -256,6 +360,76 @@
 
         <div id="results" class="results">
             <div class="loading">Click "Update" to search for destinations and compare travel options...</div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-overlay" onclick="closeModal(event, 'settingsModal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2>⚙️ Settings</h2>
+            <div class="modal-row">
+                <label>API Keys (optional):</label>
+                <input type="text" id="modalOrsKey" placeholder="OpenRouteService API Key">
+            </div>
+            <div class="modal-row">
+                <input type="text" id="modalAmadeusKey" placeholder="Amadeus API Key">
+            </div>
+            <div class="modal-row">
+                <label>Search Radius (miles):</label>
+                <input type="number" id="modalRadius" value="500" min="50" max="2000">
+            </div>
+            <div class="modal-row">
+                <label>Max Destinations:</label>
+                <input type="number" id="modalMaxDests" value="10" min="5" max="50">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-secondary" onclick="closeSettings()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- People Modal -->
+    <div id="peopleModal" class="modal-overlay" onclick="closeModal(event, 'peopleModal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h2>👥 Edit People</h2>
+            <div class="modal-row">
+                <label>Person A Name:</label>
+                <input type="text" id="personAName" value="Fuquay Varina, NC">
+            </div>
+            <div class="modal-row">
+                <label>Person A ZIP:</label>
+                <input type="text" id="personAZip" value="27526">
+            </div>
+            <div class="modal-row">
+                <label>Latitude:</label>
+                <input type="text" id="personALat" value="35.5843">
+            </div>
+            <div class="modal-row">
+                <label>Longitude:</label>
+                <input type="text" id="personALon" value="-78.8000">
+            </div>
+            <hr style="margin: 20px 0;">
+            <div class="modal-row">
+                <label>Person B Name:</label>
+                <input type="text" id="personBName" value="Farmingdale, NY">
+            </div>
+            <div class="modal-row">
+                <label>Person B ZIP:</label>
+                <input type="text" id="personBZip" value="11735">
+            </div>
+            <div class="modal-row">
+                <label>Latitude:</label>
+                <input type="text" id="personBLat" value="40.7326">
+            </div>
+            <div class="modal-row">
+                <label>Longitude:</label>
+                <input type="text" id="personBLon" value="-73.4454">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-secondary" onclick="closePeople()">Cancel</button>
+                <button class="modal-btn modal-btn-primary" onclick="savePeople()">Save & Update</button>
+            </div>
         </div>
     </div>
 
@@ -552,6 +726,99 @@
         document.getElementById('amadeusKey').addEventListener('change', (e) => {
             localStorage.setItem('amadeus_api_key', e.target.value);
         });
+
+        // Modal Functions
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.add('active');
+            // Load current values
+            document.getElementById('modalOrsKey').value = localStorage.getItem('ors_api_key') || '';
+            document.getElementById('modalAmadeusKey').value = localStorage.getItem('amadeus_api_key') || '';
+            document.getElementById('modalRadius').value = document.getElementById('radius').value;
+            document.getElementById('modalMaxDests').value = document.getElementById('maxDests').value;
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function saveSettings() {
+            // Save API keys
+            const orsKey = document.getElementById('modalOrsKey').value;
+            const amadeusKey = document.getElementById('modalAmadeusKey').value;
+            localStorage.setItem('ors_api_key', orsKey);
+            localStorage.setItem('amadeus_api_key', amadeusKey);
+            
+            // Update visible inputs
+            document.getElementById('orsKey').value = orsKey;
+            document.getElementById('amadeusKey').value = amadeusKey;
+            document.getElementById('radius').value = document.getElementById('modalRadius').value;
+            document.getElementById('maxDests').value = document.getElementById('modalMaxDests').value;
+            
+            closeSettings();
+            updateData(); // Refresh with new settings
+        }
+
+        function editPeople() {
+            const modal = document.getElementById('peopleModal');
+            modal.classList.add('active');
+            // Load current values
+            document.getElementById('personAName').value = ORIGIN_A.name;
+            document.getElementById('personAZip').value = ORIGIN_A.zip;
+            document.getElementById('personALat').value = ORIGIN_A.lat;
+            document.getElementById('personALon').value = ORIGIN_A.lon;
+            document.getElementById('personBName').value = ORIGIN_B.name;
+            document.getElementById('personBZip').value = ORIGIN_B.zip;
+            document.getElementById('personBLat').value = ORIGIN_B.lat;
+            document.getElementById('personBLon').value = ORIGIN_B.lon;
+        }
+
+        function closePeople() {
+            document.getElementById('peopleModal').classList.remove('active');
+        }
+
+        function savePeople() {
+            // Update origin A
+            ORIGIN_A.name = document.getElementById('personAName').value;
+            ORIGIN_A.zip = document.getElementById('personAZip').value;
+            ORIGIN_A.lat = parseFloat(document.getElementById('personALat').value);
+            ORIGIN_A.lon = parseFloat(document.getElementById('personALon').value);
+            
+            // Update origin B
+            ORIGIN_B.name = document.getElementById('personBName').value;
+            ORIGIN_B.zip = document.getElementById('personBZip').value;
+            ORIGIN_B.lat = parseFloat(document.getElementById('personBLat').value);
+            ORIGIN_B.lon = parseFloat(document.getElementById('personBLon').value);
+            
+            // Update display
+            document.getElementById('originAText').textContent = `${ORIGIN_A.name} ${ORIGIN_A.zip}`;
+            document.getElementById('originBText').textContent = `${ORIGIN_B.name} ${ORIGIN_B.zip}`;
+            
+            // Save to localStorage
+            localStorage.setItem('origin_a', JSON.stringify(ORIGIN_A));
+            localStorage.setItem('origin_b', JSON.stringify(ORIGIN_B));
+            
+            closePeople();
+            updateData(); // Refresh with new locations
+        }
+
+        function closeModal(event, modalId) {
+            if (event.target.id === modalId) {
+                document.getElementById(modalId).classList.remove('active');
+            }
+        }
+
+        // Load saved people on startup
+        const savedA = localStorage.getItem('origin_a');
+        const savedB = localStorage.getItem('origin_b');
+        if (savedA) {
+            Object.assign(ORIGIN_A, JSON.parse(savedA));
+            document.getElementById('originAText').textContent = `${ORIGIN_A.name} ${ORIGIN_A.zip}`;
+        }
+        if (savedB) {
+            Object.assign(ORIGIN_B, JSON.parse(savedB));
+            document.getElementById('originBText').textContent = `${ORIGIN_B.name} ${ORIGIN_B.zip}`;
+        }
     </script>
 </body>
 </html>
