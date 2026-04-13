@@ -528,28 +528,37 @@
         }
 
         // Get real flight data from Travelpayouts API
-        async function getFlightData(fromLat, fromLon, toLat, toLon, apiKey) {
+        // Uses their prices API which returns actual ticket prices for routes
+        async function getFlightData(originCode, destCode, apiKey) {
             if (!apiKey) return null;
             
-            const cacheKey = `${fromLat},${fromLon}-${toLat},${toLon}`;
+            const cacheKey = `${originCode}-${destCode}`;
             if (drivingCache[cacheKey]) return drivingCache[cacheKey];
             
             try {
+                // Travelpayouts API endpoint for latest prices
                 const response = await fetch(
-                    `https://api.travelpayouts.com/v1/flight/search?apiKey=${apiKey}&fromLat=${fromLat}&fromLon=${fromLon}&toLat=${toLat}&toLon=${toLon}`,
+                    `https://api.travelpayouts.com/v2/prices/latest?origin=${originCode}&destination=${destCode}&one_way=true&token=${apiKey}`,
                     { headers: { 'Accept': 'application/json' } }
                 );
                 
                 if (!response.ok) throw new Error(`API error: ${response.status}`);
                 
                 const data = await response.json();
-                if (!data.flights || data.flights.length === 0) return null;
+                console.log('Travelpayouts API response:', data); // Debug log
                 
-                const flight = data.flights[0]; // Take first flight option
+                if (!data.data || data.data.length === 0) {
+                    console.log('No flights found for route', originCode, '->', destCode);
+                    return null;
+                }
+                
+                // Get the cheapest flight option
+                const flight = data.data[0];
                 const result = {
-                    distance: Math.round(flight.distance_miles),
-                    time: Math.round(flight.duration_minutes),
-                    cost: Math.round(flight.price_usd),
+                    originCode: originCode,
+                    destCode: destCode,
+                    cost: Math.round(flight.price),
+                    time: 120 + Math.round(calculateDistance(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, ORIGIN_A.lat, ORIGIN_A.lon) / 500 * 60), // Estimate flight time: 2h + distance factor
                     source: 'api'
                 };
                 
@@ -688,13 +697,12 @@
             let flightA;
             
             // Try to get real flight data from Travelpayouts API
-            const realFlightA = await getFlightData(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon, travelpayoutsKey);
+            const realFlightA = await getFlightData(ORIGIN_A_AIRPORT.code, dest.airport.code, travelpayoutsKey);
             
             // For NY, check both JFK and ISP and pick best option
             const nyFlightOptions = [];
             for (const airport of ORIGIN_B_AIRPORTS) {
-                const dist = calculateDistance(airport.lat, airport.lon, dest.airport.lat, dest.airport.lon);
-                const flight = await getFlightData(airport.lat, airport.lon, dest.airport.lat, dest.airport.lon, travelpayoutsKey);
+                const flight = await getFlightData(airport.code, dest.airport.code, travelpayoutsKey);
                 if (flight) {
                     nyFlightOptions.push({ ...flight, airportCode: airport.code, airportName: airport.name });
                 }
@@ -705,7 +713,8 @@
             const nyFlight = nyFlightOptions.length > 0 ? nyFlightOptions[0] : null;
             
             // Use real flight data if available, otherwise fall back to estimates
-            flightA = realFlightA || estimateFlight(ORIGIN_A_AIRPORT, dest.airport, calculateDistance(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon));
+            const airportDistA = calculateDistance(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon);
+            flightA = realFlightA || estimateFlight(ORIGIN_A_AIRPORT, dest.airport, airportDistA);
             
             // Calculate overall fairness score
             const driveScore = calculateScore(driveA, driveB);
