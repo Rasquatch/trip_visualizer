@@ -690,11 +690,14 @@
             const realFlightA = await getFlightData(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon, travelpayoutsKey);
             
             // For NY, check both JFK and ISP and pick best option
-            const nyFlightOptions = ORIGIN_B_AIRPORTS.map(airport => {
+            const nyFlightOptions = [];
+            for (const airport of ORIGIN_B_AIRPORTS) {
                 const dist = calculateDistance(airport.lat, airport.lon, dest.airport.lat, dest.airport.lon);
                 const flight = await getFlightData(airport.lat, airport.lon, dest.airport.lat, dest.airport.lon, travelpayoutsKey);
-                return flight ? { ...flight, airportCode: airport.code, airportName: airport.name } : null;
-            }).filter(f => f !== null);
+                if (flight) {
+                    nyFlightOptions.push({ ...flight, airportCode: airport.code, airportName: airport.name });
+                }
+            }
             
             // Pick the best NY flight (lowest total time, then lowest cost)
             nyFlightOptions.sort((a, b) => (a.time - b.time) || (a.cost - b.cost));
