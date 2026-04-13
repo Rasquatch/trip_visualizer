@@ -493,81 +493,22 @@
         // Cache for API results
         const drivingCache = {};
         
-        // Get real driving data from OpenRouteService API
-        async function getDrivingData(fromLat, fromLon, toLat, toLon, apiKey) {
-            if (!apiKey) return null;
-            
-            const cacheKey = `${fromLat},${fromLon}-${toLat},${toLon}`;
-            if (drivingCache[cacheKey]) return drivingCache[cacheKey];
-            
-            try {
-                const response = await fetch(
-                    `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLon},${fromLat}&end=${toLon},${toLat}`,
-                    { headers: { 'Accept': 'application/json' } }
-                );
-                
-                if (!response.ok) throw new Error(`API error: ${response.status}`);
-                
-                const data = await response.json();
-                const route = data.features[0];
-                const distanceKm = route.properties.summary.distance / 1000;
-                const durationSec = route.properties.summary.duration;
-                
-                const result = {
-                    distance: Math.round(distanceKm * 0.621371), // Convert to miles
-                    time: Math.round(durationSec / 60), // Convert to minutes
-                    source: 'api'
-                };
-                
-                drivingCache[cacheKey] = result;
-                return result;
-            } catch (error) {
-                console.warn('OpenRouteService API failed, falling back to estimate:', error);
-                return null;
-            }
+        // Get driving data estimate (CORS blocks API calls from browser, using reliable estimates)
+        function getDrivingData(fromLat, fromLon, toLat, toLon) {
+            const dist = calculateDistance(fromLat, fromLon, toLat, toLon);
+            const est = estimateDrivingTime(dist);
+            return { 
+                distance: Math.round(dist), 
+                time: est.totalMinutes, 
+                source: 'estimated' 
+            };
         }
 
-        // Get real flight data from Travelpayouts API
-        // Uses their prices API which returns actual ticket prices for routes
-        async function getFlightData(originCode, destCode, apiKey) {
-            if (!apiKey) return null;
-            
-            const cacheKey = `${originCode}-${destCode}`;
-            if (drivingCache[cacheKey]) return drivingCache[cacheKey];
-            
-            try {
-                // Travelpayouts API endpoint for latest prices
-                const response = await fetch(
-                    `https://api.travelpayouts.com/v2/prices/latest?origin=${originCode}&destination=${destCode}&one_way=true&token=${apiKey}`,
-                    { headers: { 'Accept': 'application/json' } }
-                );
-                
-                if (!response.ok) throw new Error(`API error: ${response.status}`);
-                
-                const data = await response.json();
-                console.log('Travelpayouts API response:', data); // Debug log
-                
-                if (!data.data || data.data.length === 0) {
-                    console.log('No flights found for route', originCode, '->', destCode);
-                    return null;
-                }
-                
-                // Get the cheapest flight option
-                const flight = data.data[0];
-                const result = {
-                    originCode: originCode,
-                    destCode: destCode,
-                    cost: Math.round(flight.price),
-                    time: 120 + Math.round(calculateDistance(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, ORIGIN_A.lat, ORIGIN_A.lon) / 500 * 60), // Estimate flight time: 2h + distance factor
-                    source: 'api'
-                };
-                
-                drivingCache[cacheKey] = result;
-                return result;
-            } catch (error) {
-                console.warn('Travelpayouts API failed, falling back to estimate:', error);
-                return null;
-            }
+        // Get flight data estimate (CORS blocks API calls from browser, using reliable estimates)
+        function getFlightData(originAirport, destAirport) {
+            const dist = calculateDistance(originAirport.lat, originAirport.lon, destAirport.lat, destAirport.lon);
+            const flight = estimateFlight(originAirport, destAirport, dist);
+            return flight;
         }
 
         // Calculate driving time (fallback estimate if no API)
@@ -668,41 +609,20 @@
 
         // Analyze a destination
         async function analyzeDestination(dest) {
-            const travelpayoutsKey = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded Travelpayouts API key
-            const orsKey = '5b3ce3597851110001cf6248'; // Hardcoded OpenRouteService API key
+            // Get driving data (estimates - APIs blocked by CORS from browser)
+            const driveDataA = getDrivingData(ORIGIN_A.lat, ORIGIN_A.lon, dest.lat, dest.lon);
+            const driveDataB = getDrivingData(ORIGIN_B.lat, ORIGIN_B.lon, dest.lat, dest.lon);
             
-            // Try to get real driving data from API, fallback to estimates
-            let driveA, driveB;
+            const driveA = { ...driveDataA, cost: estimateDrivingCost(driveDataA.distance) };
+            const driveB = { ...driveDataB, cost: estimateDrivingCost(driveDataB.distance) };
             
-            const realDriveA = await getDrivingData(ORIGIN_A.lat, ORIGIN_A.lon, dest.lat, dest.lon, orsKey);
-            const realDriveB = await getDrivingData(ORIGIN_B.lat, ORIGIN_B.lon, dest.lat, dest.lon, orsKey);
-            
-            if (realDriveA) {
-                driveA = { ...realDriveA, cost: estimateDrivingCost(realDriveA.distance) };
-            } else {
-                const distA = calculateDistance(ORIGIN_A.lat, ORIGIN_A.lon, dest.lat, dest.lon);
-                const estA = estimateDrivingTime(distA);
-                driveA = { distance: Math.round(distA), time: estA.totalMinutes, cost: estimateDrivingCost(distA), source: 'estimated' };
-            }
-            
-            if (realDriveB) {
-                driveB = { ...realDriveB, cost: estimateDrivingCost(realDriveB.distance) };
-            } else {
-                const distB = calculateDistance(ORIGIN_B.lat, ORIGIN_B.lon, dest.lat, dest.lon);
-                const estB = estimateDrivingTime(distB);
-                driveB = { distance: Math.round(distB), time: estB.totalMinutes, cost: estimateDrivingCost(distB), source: 'estimated' };
-            }
-            
-            // Flight analysis - use real API data
-            let flightA;
-            
-            // Try to get real flight data from Travelpayouts API
-            const realFlightA = await getFlightData(ORIGIN_A_AIRPORT.code, dest.airport.code, travelpayoutsKey);
+            // Flight analysis - use estimates (APIs blocked by CORS from browser)
+            let flightA = getFlightData(ORIGIN_A_AIRPORT, dest.airport);
             
             // For NY, check both JFK and ISP and pick best option
             const nyFlightOptions = [];
             for (const airport of ORIGIN_B_AIRPORTS) {
-                const flight = await getFlightData(airport.code, dest.airport.code, travelpayoutsKey);
+                const flight = getFlightData(airport, dest.airport);
                 if (flight) {
                     nyFlightOptions.push({ ...flight, airportCode: airport.code, airportName: airport.name });
                 }
@@ -711,10 +631,6 @@
             // Pick the best NY flight (lowest total time, then lowest cost)
             nyFlightOptions.sort((a, b) => (a.time - b.time) || (a.cost - b.cost));
             const nyFlight = nyFlightOptions.length > 0 ? nyFlightOptions[0] : null;
-            
-            // Use real flight data if available, otherwise fall back to estimates
-            const airportDistA = calculateDistance(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon);
-            flightA = realFlightA || estimateFlight(ORIGIN_A_AIRPORT, dest.airport, airportDistA);
             
             // Calculate overall fairness score
             const driveScore = calculateScore(driveA, driveB);
@@ -791,8 +707,7 @@
                                         ${driveSourceB} ${dest.driving.personB.distance}mi
                                     </span>
                                 </div>
-                                ${!localStorage.getItem('ors_api_key') ? '<div style="font-size: 10px; color: #f57c00; margin-top: 5px; text-align: center;">⚠️ Add OpenRouteService API key in Settings for real driving data</div>' : ''}
-<div style="font-size: 10px; color: #4caf50; margin-top: 5px; text-align: center;">✅ Travelpayouts API key loaded - using real flight data</div>
+                                <div style="font-size: 10px; color: #666; margin-top: 5px; text-align: center;">ℹ️ Using distance-based estimates (APIs unavailable)</div>
                             </div>
                             
                             ${dest.flights ? `
@@ -873,13 +788,8 @@
             }
         }
 
-        // Try to load saved API keys from localStorage
+        // Initialize on page load
         window.onload = function() {
-            const orsKey = '5b3ce3597851110001cf6248'; // Hardcoded
-            const travelpayoutsKey = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded
-            document.getElementById('orsKey').value = '************ (hardcoded)';
-            document.getElementById('travelpayoutsKey').value = '************ (hardcoded)';
-            
             // Auto-run on load
             updateData();
         };
