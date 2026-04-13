@@ -445,18 +445,20 @@
             { code: "ISP", name: "Long Island MacArthur (Islip)", lat: 40.7952, lon: -73.1024 }
         ];
         
-        // Sample destinations to analyze with correct IATA airport codes
+        // Attractions and scenic destinations with appropriate airports
         const DESTINATIONS = [
-            { name: "Luray, Virginia", lat: 38.6646, lon: -78.4594, state: "VA", airport: { code: "CHO", name: "Charlottesville-Albemarle", lat: 38.1386, lon: -78.4523 } },
-            { name: "Pittsburgh, PA", lat: 40.4406, lon: -79.9959, state: "PA", airport: { code: "PIT", name: "Pittsburgh International", lat: 40.4915, lon: -80.2329 } },
-            { name: "Philadelphia, PA", lat: 39.9526, lon: -75.1652, state: "PA", airport: { code: "PHL", name: "Philadelphia International", lat: 39.8729, lon: -75.2437 } },
-            { name: "Baltimore, MD", lat: 39.2904, lon: -76.6122, state: "MD", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
-            { name: "Washington, DC", lat: 38.9072, lon: -77.0369, state: "DC", airport: { code: "DCA", name: "Ronald Reagan Washington National", lat: 38.8512, lon: -77.0402 } },
-            { name: "Richmond, VA", lat: 37.5407, lon: -77.4360, state: "VA", airport: { code: "RIC", name: "Richmond International", lat: 37.5052, lon: -77.3197 } },
-            { name: "Charlottesville, VA", lat: 38.0293, lon: -78.4767, state: "VA", airport: { code: "CHO", name: "Charlottesville-Albemarle", lat: 38.1386, lon: -78.4523 } },
-            { name: "Roanoke, VA", lat: 37.2710, lon: -79.9414, state: "VA", airport: { code: "ROA", name: "Roanoke-Blacksburg Regional", lat: 37.3255, lon: -79.9754 } },
-            { name: "Harrisburg, PA", lat: 40.2732, lon: -76.8867, state: "PA", airport: { code: "MDT", name: "Harrisburg International", lat: 40.1935, lon: -76.7633 } },
-            { name: "Allentown, PA", lat: 40.6023, lon: -75.4714, state: "PA", airport: { code: "ABE", name: "Lehigh Valley International", lat: 40.6521, lon: -75.4405 } }
+            { name: "Luray Caverns, Virginia", lat: 38.6646, lon: -78.4594, state: "VA", airport: { code: "IAD", name: "Washington Dulles International", lat: 38.9445, lon: -77.4558 } },
+            { name: "Shenandoah National Park, VA", lat: 38.5967, lon: -78.4359, state: "VA", airport: { code: "IAD", name: "Washington Dulles International", lat: 38.9445, lon: -77.4558 } },
+            { name: "Gettysburg, Pennsylvania", lat: 39.8309, lon: -77.2311, state: "PA", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
+            { name: "Hershey, Pennsylvania", lat: 40.2716, lon: -76.6509, state: "PA", airport: { code: "MDT", name: "Harrisburg International", lat: 40.1935, lon: -76.7633 } },
+            { name: "Philadelphia Historic District, PA", lat: 39.9526, lon: -75.1652, state: "PA", airport: { code: "PHL", name: "Philadelphia International", lat: 39.8729, lon: -75.2437 } },
+            { name: "Inner Harbor, Baltimore, MD", lat: 39.2847, lon: -76.6142, state: "MD", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
+            { name: "National Mall, Washington, DC", lat: 38.8899, lon: -77.0233, state: "DC", airport: { code: "DCA", name: "Ronald Reagan Washington National", lat: 38.8512, lon: -77.0402 } },
+            { name: "Colonial Williamsburg, Virginia", lat: 37.2707, lon: -76.7070, state: "VA", airport: { code: "PHF", name: "Newport News/Williamsburg International", lat: 37.1305, lon: -76.4940 } },
+            { name: "Virginia Beach, Virginia", lat: 36.8529, lon: -75.9780, state: "VA", airport: { code: "ORF", name: "Norfolk International", lat: 36.9044, lon: -76.1922 } },
+            { name: "Mount Vernon, Virginia", lat: 38.7072, lon: -77.0869, state: "VA", airport: { code: "DCA", name: "Ronald Reagan Washington National", lat: 38.8512, lon: -77.0402 } },
+            { name: "Assateague Island, Maryland", lat: 38.2399, lon: -75.0844, state: "MD", airport: { code: "ESN", name: "Salisbury-Ocean City Wicomico Regional", lat: 38.3409, lon: -75.5113 } },
+            { name: "Pocono Mountains, Pennsylvania", lat: 41.0760, lon: -75.4135, state: "PA", airport: { code: "AVP", name: "Scranton/Wilkes-Barre International", lat: 41.3386, lon: -75.7244 } }
         ];
 
         // Calculate distance between two points (Haversine formula)
