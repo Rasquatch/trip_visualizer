@@ -660,7 +660,7 @@
         // Analyze a destination
         async function analyzeDestination(dest) {
             const travelpayoutsKey = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded Travelpayouts API key
-            const orsKey = ''; // Add your OpenRouteService API key here for real driving data
+            const orsKey = '5b3ce3597851110001cf6248'; // Hardcoded OpenRouteService API key
             
             // Try to get real driving data from API, fallback to estimates
             let driveA, driveB;
@@ -866,9 +866,9 @@
 
         // Try to load saved API keys from localStorage
         window.onload = function() {
-            const orsKey = ''; // Add your OpenRouteService API key here
+            const orsKey = '5b3ce3597851110001cf6248'; // Hardcoded
             const travelpayoutsKey = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded
-            document.getElementById('orsKey').value = orsKey ? '************ (set)' : 'Add ORS key for real driving data';
+            document.getElementById('orsKey').value = '************ (hardcoded)';
             document.getElementById('travelpayoutsKey').value = '************ (hardcoded)';
             
             // Auto-run on load
@@ -888,7 +888,7 @@
             const modal = document.getElementById('settingsModal');
             modal.classList.add('active');
             // Load current values
-            document.getElementById('modalOrsKey').value = ''; // Add your OpenRouteService API key here
+            document.getElementById('modalOrsKey').value = '5b3ce3597851110001cf6248'; // Hardcoded
             document.getElementById('modalTravelpayoutsKey').value = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded
             document.getElementById('modalRadius').value = document.getElementById('radius').value;
             document.getElementById('modalMaxDests').value = document.getElementById('maxDests').value;
