@@ -510,6 +510,40 @@
             }
         }
 
+        // Get real flight data from Travelpayouts API
+        async function getFlightData(fromLat, fromLon, toLat, toLon, apiKey) {
+            if (!apiKey) return null;
+            
+            const cacheKey = `${fromLat},${fromLon}-${toLat},${toLon}`;
+            if (drivingCache[cacheKey]) return drivingCache[cacheKey];
+            
+            try {
+                const response = await fetch(
+                    `https://api.travelpayouts.com/v1/flight/search?apiKey=${apiKey}&fromLat=${fromLat}&fromLon=${fromLon}&toLat=${toLat}&toLon=${toLon}`,
+                    { headers: { 'Accept': 'application/json' } }
+                );
+                
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                
+                const data = await response.json();
+                if (!data.flights || data.flights.length === 0) return null;
+                
+                const flight = data.flights[0]; // Take first flight option
+                const result = {
+                    distance: Math.round(flight.distance_miles),
+                    time: Math.round(flight.duration_minutes),
+                    cost: Math.round(flight.price_usd),
+                    source: 'api'
+                };
+                
+                drivingCache[cacheKey] = result;
+                return result;
+            } catch (error) {
+                console.warn('Travelpayouts API failed, falling back to estimate:', error);
+                return null;
+            }
+        }
+
         // Calculate driving time (fallback estimate if no API)
         function estimateDrivingTime(distance) {
             // More realistic: 55 mph average including city driving
@@ -608,13 +642,13 @@
 
         // Analyze a destination
         async function analyzeDestination(dest) {
-            const orsKey = localStorage.getItem('ors_api_key');
+            const travelpayoutsKey = localStorage.getItem('travelpayouts_api_key');
             
             // Try to get real driving data from API, fallback to estimates
             let driveA, driveB;
             
-            const realDriveA = await getDrivingData(ORIGIN_A.lat, ORIGIN_A.lon, dest.lat, dest.lon, orsKey);
-            const realDriveB = await getDrivingData(ORIGIN_B.lat, ORIGIN_B.lon, dest.lat, dest.lon, orsKey);
+            const realDriveA = await getDrivingData(ORIGIN_A.lat, ORIGIN_A.lon, dest.lat, dest.lon, travelpayoutsKey);
+            const realDriveB = await getDrivingData(ORIGIN_B.lat, ORIGIN_B.lon, dest.lat, dest.lon, travelpayoutsKey);
             
             if (realDriveA) {
                 driveA = { ...realDriveA, cost: estimateDrivingCost(realDriveA.distance) };
@@ -632,21 +666,25 @@
                 driveB = { distance: Math.round(distB), time: estB.totalMinutes, cost: estimateDrivingCost(distB), source: 'estimated' };
             }
             
-            // Flight analysis - use airport-to-airport distance for accuracy
-            const airportDistA = calculateDistance(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon);
+            // Flight analysis - use real API data
+            let flightA, flightB;
             
-            // For NY, check both JFK and ISP and pick the best option
-            let flightBOptions = ORIGIN_B_AIRPORTS.map(airport => {
+            // Try to get real flight data from Travelpayouts API
+            const realFlightA = await getFlightData(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon, travelpayoutsKey);
+            
+            // For NY, check both JFK and ISP and pick best option
+            const nyFlightOptions = ORIGIN_B_AIRPORTS.map(airport => {
                 const dist = calculateDistance(airport.lat, airport.lon, dest.airport.lat, dest.airport.lon);
-                const flight = estimateFlight(airport, dest.airport, dist);
+                const flight = await getFlightData(airport.lat, airport.lon, dest.airport.lat, dest.airport.lon, travelpayoutsKey);
                 return flight ? { ...flight, airportCode: airport.code, airportName: airport.name } : null;
             }).filter(f => f !== null);
             
             // Pick the best NY flight (lowest total time, then lowest cost)
-            flightBOptions.sort((a, b) => (a.time - b.time) || (a.cost - b.cost));
-            const flightB = flightBOptions.length > 0 ? flightBOptions[0] : null;
+            nyFlightOptions.sort((a, b) => (a.time - b.time) || (a.cost - b.cost));
+            const nyFlight = nyFlightOptions.length > 0 ? nyFlightOptions[0] : null;
             
-            const flightA = estimateFlight(ORIGIN_A_AIRPORT, dest.airport, airportDistA);
+            // Use real flight data if available, otherwise fall back to estimates
+            flightA = realFlightA || estimateFlight(ORIGIN_A_AIRPORT, dest.airport, calculateDistance(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon));
             
             // Calculate overall fairness score
             const driveScore = calculateScore(driveA, driveB);
@@ -660,7 +698,7 @@
                 airport: dest.airport,
                 score: overallScore,
                 driving: { personA: driveA, personB: driveB },
-                flights: (flightA && flightB) ? { personA: flightA, personB: flightB } : null
+                flights: (flightA && nyFlight) ? { personA: flightA, personB: nyFlight } : null
             };
         }
 
@@ -724,6 +762,7 @@
                                     </span>
                                 </div>
                                 ${!localStorage.getItem('ors_api_key') ? '<div style="font-size: 10px; color: #f57c00; margin-top: 5px; text-align: center;">⚠️ Add OpenRouteService API key in Settings for real driving data</div>' : ''}
+${!localStorage.getItem('travelpayouts_api_key') ? '<div style="font-size: 10px; color: #4caf50; margin-top: 5px; text-align: center;">✅ Travelpayouts API key loaded - using real flight data</div>' : '<div style="font-size: 10px; color: #f57c00; margin-top: 5px; text-align: center;">⚠️ Add Travelpayouts API key in Settings for real flight data</div>'}
                             </div>
                             
                             ${dest.flights ? `
