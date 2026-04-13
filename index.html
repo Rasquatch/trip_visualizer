@@ -122,7 +122,7 @@
         }
         .travel-modes {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin-top: 20px;
         }
@@ -350,26 +350,6 @@
             <strong>Tip:</strong> Use the ⚙️ Settings button to add API keys for real-time data, or 👥 People button to change locations.
         </div>
 
-        <div class="filter-panel" style="background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
-                <div style="flex: 1; min-width: 300px;">
-                    <label style="display: block; font-weight: bold; color: #555; margin-bottom: 8px;">
-                        🚗 Max Driving Time (each way): <span id="driveTimeValue" style="color: #667eea;">8 hours</span>
-                    </label>
-                    <input type="range" id="maxDriveTime" min="2" max="16" value="8" step="0.5" 
-                        style="width: 100%; height: 8px; border-radius: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); cursor: pointer;"
-                        oninput="updateDriveTimeDisplay(this.value)" onchange="updateData()">
-                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #888; margin-top: 4px;">
-                        <span>2h</span><span>4h</span><span>6h</span><span>8h</span><span>10h</span><span>12h</span><span>14h</span><span>16h</span>
-                    </div>
-                </div>
-                <div style="text-align: right; font-size: 12px; color: #666;">
-                    <div>Destinations within <strong id="driveTimeValue2">8 hours</strong> drive for both</div>
-                    <div style="font-size: 11px; color: #888; margin-top: 2px;">Slider updates automatically</div>
-                </div>
-            </div>
-        </div>
-
         <div class="controls">
             <button onclick="updateData()" class="update-btn">🔄 Update / Search Destinations</button>
             <div class="api-status">
@@ -458,25 +438,27 @@
         const ORIGIN_A = { name: "Fuquay Varina, NC", lat: 35.5843, lon: -78.8000, zip: "27526" };
         const ORIGIN_B = { name: "Farmingdale, NY", lat: 40.7326, lon: -73.4454, zip: "11735" };
         
-        // Hardcoded OpenRouteService API key
-        const ORS_API_KEY = '5b3ce3597851110001cf624893feafe0de3e43bea32ea93aa7c2b049';
-        
         // Origin airports (nearest major airports)
         const ORIGIN_A_AIRPORT = { code: "RDU", name: "Raleigh-Durham International", lat: 35.8776, lon: -78.7875 };
-        const ORIGIN_B_AIRPORT = { code: "JFK", name: "John F. Kennedy International", lat: 40.6413, lon: -73.7781 };
+        const ORIGIN_B_AIRPORTS = [
+            { code: "JFK", name: "John F. Kennedy International", lat: 40.6413, lon: -73.7781 },
+            { code: "ISP", name: "Long Island MacArthur (Islip)", lat: 40.7952, lon: -73.1024 }
+        ];
         
-        // Sample destinations to analyze with correct IATA airport codes
+        // Attractions and scenic destinations with appropriate airports
         const DESTINATIONS = [
-            { name: "Luray, Virginia", lat: 38.6646, lon: -78.4594, state: "VA", airport: { code: "CHO", name: "Charlottesville-Albemarle", lat: 38.1386, lon: -78.4523 } },
-            { name: "Pittsburgh, PA", lat: 40.4406, lon: -79.9959, state: "PA", airport: { code: "PIT", name: "Pittsburgh International", lat: 40.4915, lon: -80.2329 } },
-            { name: "Philadelphia, PA", lat: 39.9526, lon: -75.1652, state: "PA", airport: { code: "PHL", name: "Philadelphia International", lat: 39.8729, lon: -75.2437 } },
-            { name: "Baltimore, MD", lat: 39.2904, lon: -76.6122, state: "MD", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
-            { name: "Washington, DC", lat: 38.9072, lon: -77.0369, state: "DC", airport: { code: "DCA", name: "Ronald Reagan Washington National", lat: 38.8512, lon: -77.0402 } },
-            { name: "Richmond, VA", lat: 37.5407, lon: -77.4360, state: "VA", airport: { code: "RIC", name: "Richmond International", lat: 37.5052, lon: -77.3197 } },
-            { name: "Charlottesville, VA", lat: 38.0293, lon: -78.4767, state: "VA", airport: { code: "CHO", name: "Charlottesville-Albemarle", lat: 38.1386, lon: -78.4523 } },
-            { name: "Roanoke, VA", lat: 37.2710, lon: -79.9414, state: "VA", airport: { code: "ROA", name: "Roanoke-Blacksburg Regional", lat: 37.3255, lon: -79.9754 } },
-            { name: "Harrisburg, PA", lat: 40.2732, lon: -76.8867, state: "PA", airport: { code: "MDT", name: "Harrisburg International", lat: 40.1935, lon: -76.7633 } },
-            { name: "Allentown, PA", lat: 40.6023, lon: -75.4714, state: "PA", airport: { code: "ABE", name: "Lehigh Valley International", lat: 40.6521, lon: -75.4405 } }
+            { name: "Luray Caverns, Virginia", lat: 38.6646, lon: -78.4594, state: "VA", airport: { code: "IAD", name: "Washington Dulles International", lat: 38.9445, lon: -77.4558 } },
+            { name: "Shenandoah National Park, VA", lat: 38.5967, lon: -78.4359, state: "VA", airport: { code: "IAD", name: "Washington Dulles International", lat: 38.9445, lon: -77.4558 } },
+            { name: "Gettysburg, Pennsylvania", lat: 39.8309, lon: -77.2311, state: "PA", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
+            { name: "Hershey, Pennsylvania", lat: 40.2716, lon: -76.6509, state: "PA", airport: { code: "MDT", name: "Harrisburg International", lat: 40.1935, lon: -76.7633 } },
+            { name: "Philadelphia Historic District, PA", lat: 39.9526, lon: -75.1652, state: "PA", airport: { code: "PHL", name: "Philadelphia International", lat: 39.8729, lon: -75.2437 } },
+            { name: "Inner Harbor, Baltimore, MD", lat: 39.2847, lon: -76.6142, state: "MD", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
+            { name: "National Mall, Washington, DC", lat: 38.8899, lon: -77.0233, state: "DC", airport: { code: "DCA", name: "Ronald Reagan Washington National", lat: 38.8512, lon: -77.0402 } },
+            { name: "Colonial Williamsburg, Virginia", lat: 37.2707, lon: -76.7070, state: "VA", airport: { code: "PHF", name: "Newport News/Williamsburg International", lat: 37.1305, lon: -76.4940 } },
+            { name: "Virginia Beach, Virginia", lat: 36.8529, lon: -75.9780, state: "VA", airport: { code: "ORF", name: "Norfolk International", lat: 36.9044, lon: -76.1922 } },
+            { name: "Mount Vernon, Virginia", lat: 38.7072, lon: -77.0869, state: "VA", airport: { code: "DCA", name: "Ronald Reagan Washington National", lat: 38.8512, lon: -77.0402 } },
+            { name: "Assateague Island, Maryland", lat: 38.2399, lon: -75.0844, state: "MD", airport: { code: "ESN", name: "Salisbury-Ocean City Wicomico Regional", lat: 38.3409, lon: -75.5113 } },
+            { name: "Pocono Mountains, Pennsylvania", lat: 41.0760, lon: -75.4135, state: "PA", airport: { code: "AVP", name: "Scranton/Wilkes-Barre International", lat: 41.3386, lon: -75.7244 } }
         ];
 
         // Calculate distance between two points (Haversine formula)
@@ -496,16 +478,14 @@
         
         // Get real driving data from OpenRouteService API
         async function getDrivingData(fromLat, fromLon, toLat, toLon, apiKey) {
-            // Use provided key, or hardcoded key, or localStorage key
-            const key = apiKey || localStorage.getItem('ors_api_key') || ORS_API_KEY;
-            if (!key) return null;
+            if (!apiKey) return null;
             
             const cacheKey = `${fromLat},${fromLon}-${toLat},${toLon}`;
             if (drivingCache[cacheKey]) return drivingCache[cacheKey];
             
             try {
                 const response = await fetch(
-                    `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${key}&start=${fromLon},${fromLat}&end=${toLon},${toLat}`,
+                    `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${fromLon},${fromLat}&end=${toLon},${toLat}`,
                     { headers: { 'Accept': 'application/json' } }
                 );
                 
@@ -572,8 +552,8 @@
                 flightTimeMinutes = 210;
             }
             
-            // Add gate time, security, boarding (typically 2-3 hours total)
-            const totalTime = flightTimeMinutes + 150; // 2.5 hours airport time
+            // Add gate time, security, boarding (typically 2 hours total)
+            const totalTime = flightTimeMinutes + 120; // 2 hours airport time
             
             // Seasonal variation simulation (±15%)
             const variation = 0.85 + (Math.random() * 0.3);
@@ -583,6 +563,33 @@
                 time: totalTime,
                 originCode: originAirport.code,
                 destCode: destAirport.code,
+                source: 'estimated'
+            };
+        }
+
+        // Amtrak train estimates with actual route knowledge
+        function estimateTrain(distance) {
+            // Amtrak Northeast Corridor and other routes
+            if (distance < 80) return null; // Too short, bus is better
+            
+            let cost, time;
+            
+            // Northeast Corridor (higher speed, more expensive)
+            if (distance < 200) {
+                cost = 45 + (distance * 0.25); // ~$45-95
+                time = Math.round(distance / 70 * 60); // ~70 mph average
+            } else if (distance < 400) {
+                cost = 75 + (distance * 0.20); // ~$75-155
+                time = Math.round(distance / 65 * 60); // ~65 mph
+            } else {
+                // Longer routes (Palmetto, Crescent, etc)
+                cost = 120 + (distance * 0.15); // ~$120+
+                time = Math.round(distance / 55 * 60); // ~55 mph includes stops
+            }
+            
+            return { 
+                cost: Math.round(cost), 
+                time: time,
                 source: 'estimated'
             };
         }
@@ -599,16 +606,9 @@
             return Math.round((timeScore + costScore) / 2);
         }
 
-        // Update drive time display
-        function updateDriveTimeDisplay(value) {
-            document.getElementById('driveTimeValue').textContent = value + ' hours';
-            document.getElementById('driveTimeValue2').textContent = value + ' hours';
-        }
-
         // Analyze a destination
         async function analyzeDestination(dest) {
             const orsKey = localStorage.getItem('ors_api_key');
-            const maxDriveMinutes = parseFloat(document.getElementById('maxDriveTime').value) * 60;
             
             // Try to get real driving data from API, fallback to estimates
             let driveA, driveB;
@@ -634,10 +634,19 @@
             
             // Flight analysis - use airport-to-airport distance for accuracy
             const airportDistA = calculateDistance(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon);
-            const airportDistB = calculateDistance(ORIGIN_B_AIRPORT.lat, ORIGIN_B_AIRPORT.lon, dest.airport.lat, dest.airport.lon);
+            
+            // For NY, check both JFK and ISP and pick the best option
+            let flightBOptions = ORIGIN_B_AIRPORTS.map(airport => {
+                const dist = calculateDistance(airport.lat, airport.lon, dest.airport.lat, dest.airport.lon);
+                const flight = estimateFlight(airport, dest.airport, dist);
+                return flight ? { ...flight, airportCode: airport.code, airportName: airport.name } : null;
+            }).filter(f => f !== null);
+            
+            // Pick the best NY flight (lowest total time, then lowest cost)
+            flightBOptions.sort((a, b) => (a.time - b.time) || (a.cost - b.cost));
+            const flightB = flightBOptions.length > 0 ? flightBOptions[0] : null;
             
             const flightA = estimateFlight(ORIGIN_A_AIRPORT, dest.airport, airportDistA);
-            const flightB = estimateFlight(ORIGIN_B_AIRPORT, dest.airport, airportDistB);
             
             // Calculate overall fairness score
             const driveScore = calculateScore(driveA, driveB);
@@ -645,15 +654,11 @@
             
             const overallScore = Math.max(driveScore, flightScore);
             
-            // Check if within max driving time for BOTH people
-            const withinDriveTime = driveA.time <= maxDriveMinutes && driveB.time <= maxDriveMinutes;
-            
             return {
                 name: dest.name,
                 state: dest.state,
                 airport: dest.airport,
                 score: overallScore,
-                withinDriveTime: withinDriveTime,
                 driving: { personA: driveA, personB: driveB },
                 flights: (flightA && flightB) ? { personA: flightA, personB: flightB } : null
             };
@@ -670,38 +675,13 @@
         // Render results
         function renderResults(results) {
             const container = document.getElementById('results');
-            const maxDriveMinutes = parseFloat(document.getElementById('maxDriveTime').value) * 60;
-            
-            // Filter to only show destinations within max drive time
-            const filteredResults = results.filter(r => r.withinDriveTime);
-            
-            // If no results match, show a message
-            if (filteredResults.length === 0) {
-                container.innerHTML = `
-                    <div class="error" style="text-align: center; padding: 40px;">
-                        <strong>No destinations found within ${document.getElementById('maxDriveTime').value} hours driving time.</strong><br><br>
-                        Try increasing the max driving time slider above, or consider flying!<br><br>
-                        <button onclick="document.getElementById('maxDriveTime').value=12; updateDriveTimeDisplay(12); updateData();" 
-                            style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 20px; cursor: pointer;">
-                            Try 12 hours
-                        </button>
-                    </div>
-                `;
-                return;
-            }
             
             // Sort by score
-            filteredResults.sort((a, b) => b.score - a.score);
+            results.sort((a, b) => b.score - a.score);
             
-            let html = `<h2 style="margin-bottom: 20px;">🏆 Top ${filteredResults.length} Destinations Within ${document.getElementById('maxDriveTime').value}h Drive (Ranked by Fairness)</h2>`;
+            let html = `<h2 style="margin-bottom: 20px;">🏆 Top ${results.length} Destinations (Ranked by Fairness)</h2>`;
             
-            if (filteredResults.length < results.length) {
-                html += `<div style="background: #fff3e0; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #e65100;">
-                    📊 ${results.length - filteredResults.length} destinations hidden (exceed max drive time). Increase slider to see more.
-                </div>`;
-            }
-            
-            filteredResults.forEach((dest, index) => {
+            results.forEach((dest, index) => {
                 const badge = dest.score >= 80 ? '🥇 Excellent' : 
                              dest.score >= 60 ? '🥈 Good' : 
                              dest.score >= 40 ? '🥉 Fair' : '⚠️ Poor';
@@ -743,7 +723,7 @@
                                         ${driveSourceB} ${dest.driving.personB.distance}mi
                                     </span>
                                 </div>
-                                ${!localStorage.getItem('ors_api_key') ? '<div style="font-size: 10px; color: #f57c00; margin-top: 5px; text-align: center;">⚠️ Add OpenRouteService API key in Settings for real driving data</div>' : '<div style="font-size: 10px; color: #4caf50; margin-top: 5px; text-align: center;">✅ Using real road data from OpenRouteService API</div>'}
+                                ${!localStorage.getItem('ors_api_key') ? '<div style="font-size: 10px; color: #f57c00; margin-top: 5px; text-align: center;">⚠️ Add OpenRouteService API key in Settings for real driving data</div>' : ''}
                             </div>
                             
                             ${dest.flights ? `
@@ -751,7 +731,7 @@
                                 <div class="mode-icon">✈️</div>
                                 <div class="mode-name">Flight <span style="font-size: 10px; color: #888;">(Estimated)</span></div>
                                 <div style="font-size: 11px; color: #666; text-align: center; margin-bottom: 8px; padding: 4px; background: #f5f5f5; border-radius: 4px;">
-                                    ${dest.flights.personA.originCode} ✈️ ${dest.flights.personA.destCode} | ${dest.flights.personB.originCode} ✈️ ${dest.flights.personB.destCode}
+                                    ${dest.flights.personA.originCode} ✈️ ${dest.flights.personA.destCode} | ${dest.flights.personB.airportCode || dest.flights.personB.originCode} ✈️ ${dest.flights.personB.destCode}
                                 </div>
                                 <div class="person-a">
                                     <span>From NC:</span>
@@ -759,12 +739,12 @@
                                     <span class="cost">$${dest.flights.personA.cost}</span>
                                 </div>
                                 <div class="person-b">
-                                    <span>From NY:</span>
+                                    <span>From NY (${dest.flights.personB.airportCode || 'JFK'}):</span>
                                     <span class="time">${formatTime(dest.flights.personB.time)}</span>
                                     <span class="cost">$${dest.flights.personB.cost}</span>
                                 </div>
                                 <div style="font-size: 9px; color: #999; text-align: center; margin-top: 5px;">
-                                    Includes gate time + security (2.5hrs)
+                                    Includes gate time + security (2hrs)
                                 </div>
                             </div>
                             ` : `
@@ -777,6 +757,7 @@
                                 </div>
                             </div>
                             `}
+                            
                         </div>
                     </div>
                 `;
@@ -823,21 +804,12 @@
             }
         }
 
-        // Initialize on page load
+        // Try to load saved API keys from localStorage
         window.onload = function() {
-            // Pre-populate with hardcoded key (user can override in Settings if needed)
-            if (!localStorage.getItem('ors_api_key')) {
-                localStorage.setItem('ors_api_key', ORS_API_KEY);
-            }
-            
             const orsKey = localStorage.getItem('ors_api_key');
             const amadeusKey = localStorage.getItem('amadeus_api_key');
-            if (orsKey) document.getElementById('orsKey').value = '•••••••••••••••••••• (Hardcoded)';
+            if (orsKey) document.getElementById('orsKey').value = orsKey;
             if (amadeusKey) document.getElementById('amadeusKey').value = amadeusKey;
-            
-            // Update status badge
-            document.getElementById('orsStatus').textContent = 'OpenRouteService: Active (API Key Set)';
-            document.getElementById('orsStatus').className = 'status-badge status-success';
             
             // Auto-run on load
             updateData();
