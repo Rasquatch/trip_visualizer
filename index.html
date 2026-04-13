@@ -333,7 +333,7 @@
             <div class="config-row">
                 <label>API Keys (optional):</label>
                 <input type="text" id="orsKey" placeholder="OpenRouteService API Key" class="api-key-input">
-                <input type="text" id="amadeusKey" placeholder="Amadeus API Key" class="api-key-input">
+                <input type="text" id="travelpayoutsKey" placeholder="Travelpayouts API Key" class="api-key-input">
             </div>
             <div class="config-row">
                 <label>Search Radius:</label>
@@ -372,7 +372,7 @@
                 <input type="text" id="modalOrsKey" placeholder="OpenRouteService API Key">
             </div>
             <div class="modal-row">
-                <input type="text" id="modalAmadeusKey" placeholder="Amadeus API Key">
+                <input type="text" id="modalTravelpayoutsKey" placeholder="Travelpayouts API Key">
             </div>
             <div class="modal-row">
                 <label>Search Radius (miles):</label>
@@ -866,9 +866,9 @@ ${!localStorage.getItem('travelpayouts_api_key') ? '<div style="font-size: 10px;
         // Try to load saved API keys from localStorage
         window.onload = function() {
             const orsKey = localStorage.getItem('ors_api_key');
-            const amadeusKey = localStorage.getItem('amadeus_api_key');
+            const travelpayoutsKey = localStorage.getItem('travelpayouts_api_key');
             if (orsKey) document.getElementById('orsKey').value = orsKey;
-            if (amadeusKey) document.getElementById('amadeusKey').value = amadeusKey;
+            if (travelpayoutsKey) document.getElementById('travelpayoutsKey').value = travelpayoutsKey;
             
             // Auto-run on load
             updateData();
@@ -878,8 +878,8 @@ ${!localStorage.getItem('travelpayouts_api_key') ? '<div style="font-size: 10px;
         document.getElementById('orsKey').addEventListener('change', (e) => {
             localStorage.setItem('ors_api_key', e.target.value);
         });
-        document.getElementById('amadeusKey').addEventListener('change', (e) => {
-            localStorage.setItem('amadeus_api_key', e.target.value);
+        document.getElementById('travelpayoutsKey').addEventListener('change', (e) => {
+            localStorage.setItem('travelpayouts_api_key', e.target.value);
         });
 
         // Modal Functions
@@ -888,7 +888,7 @@ ${!localStorage.getItem('travelpayouts_api_key') ? '<div style="font-size: 10px;
             modal.classList.add('active');
             // Load current values
             document.getElementById('modalOrsKey').value = localStorage.getItem('ors_api_key') || '';
-            document.getElementById('modalAmadeusKey').value = localStorage.getItem('amadeus_api_key') || '';
+            document.getElementById('modalTravelpayoutsKey').value = localStorage.getItem('travelpayouts_api_key') || '';
             document.getElementById('modalRadius').value = document.getElementById('radius').value;
             document.getElementById('modalMaxDests').value = document.getElementById('maxDests').value;
         }
@@ -900,13 +900,13 @@ ${!localStorage.getItem('travelpayouts_api_key') ? '<div style="font-size: 10px;
         function saveSettings() {
             // Save API keys
             const orsKey = document.getElementById('modalOrsKey').value;
-            const amadeusKey = document.getElementById('modalAmadeusKey').value;
+            const travelpayoutsKey = document.getElementById('modalTravelpayoutsKey').value;
             localStorage.setItem('ors_api_key', orsKey);
-            localStorage.setItem('amadeus_api_key', amadeusKey);
+            localStorage.setItem('travelpayouts_api_key', travelpayoutsKey);
             
             // Update visible inputs
             document.getElementById('orsKey').value = orsKey;
-            document.getElementById('amadeusKey').value = amadeusKey;
+            document.getElementById('travelpayoutsKey').value = travelpayoutsKey;
             document.getElementById('radius').value = document.getElementById('modalRadius').value;
             document.getElementById('maxDests').value = document.getElementById('modalMaxDests').value;
             
