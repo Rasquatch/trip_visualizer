@@ -660,12 +660,13 @@
         // Analyze a destination
         async function analyzeDestination(dest) {
             const travelpayoutsKey = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded Travelpayouts API key
+            const orsKey = ''; // Add your OpenRouteService API key here for real driving data
             
             // Try to get real driving data from API, fallback to estimates
             let driveA, driveB;
             
-            const realDriveA = await getDrivingData(ORIGIN_A.lat, ORIGIN_A.lon, dest.lat, dest.lon, travelpayoutsKey);
-            const realDriveB = await getDrivingData(ORIGIN_B.lat, ORIGIN_B.lon, dest.lat, dest.lon, travelpayoutsKey);
+            const realDriveA = await getDrivingData(ORIGIN_A.lat, ORIGIN_A.lon, dest.lat, dest.lon, orsKey);
+            const realDriveB = await getDrivingData(ORIGIN_B.lat, ORIGIN_B.lon, dest.lat, dest.lon, orsKey);
             
             if (realDriveA) {
                 driveA = { ...realDriveA, cost: estimateDrivingCost(realDriveA.distance) };
@@ -865,9 +866,9 @@
 
         // Try to load saved API keys from localStorage
         window.onload = function() {
-            const orsKey = localStorage.getItem('ors_api_key');
+            const orsKey = ''; // Add your OpenRouteService API key here
             const travelpayoutsKey = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded
-            if (orsKey) document.getElementById('orsKey').value = orsKey;
+            document.getElementById('orsKey').value = orsKey ? '************ (set)' : 'Add ORS key for real driving data';
             document.getElementById('travelpayoutsKey').value = '************ (hardcoded)';
             
             // Auto-run on load
@@ -887,7 +888,7 @@
             const modal = document.getElementById('settingsModal');
             modal.classList.add('active');
             // Load current values
-            document.getElementById('modalOrsKey').value = localStorage.getItem('ors_api_key') || '';
+            document.getElementById('modalOrsKey').value = ''; // Add your OpenRouteService API key here
             document.getElementById('modalTravelpayoutsKey').value = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded
             document.getElementById('modalRadius').value = document.getElementById('radius').value;
             document.getElementById('modalMaxDests').value = document.getElementById('maxDests').value;
