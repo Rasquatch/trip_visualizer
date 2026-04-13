@@ -659,7 +659,7 @@
 
         // Analyze a destination
         async function analyzeDestination(dest) {
-            const travelpayoutsKey = localStorage.getItem('travelpayouts_api_key');
+            const travelpayoutsKey = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded Travelpayouts API key
             
             // Try to get real driving data from API, fallback to estimates
             let driveA, driveB;
@@ -782,7 +782,7 @@
                                     </span>
                                 </div>
                                 ${!localStorage.getItem('ors_api_key') ? '<div style="font-size: 10px; color: #f57c00; margin-top: 5px; text-align: center;">⚠️ Add OpenRouteService API key in Settings for real driving data</div>' : ''}
-${!localStorage.getItem('travelpayouts_api_key') ? '<div style="font-size: 10px; color: #4caf50; margin-top: 5px; text-align: center;">✅ Travelpayouts API key loaded - using real flight data</div>' : '<div style="font-size: 10px; color: #f57c00; margin-top: 5px; text-align: center;">⚠️ Add Travelpayouts API key in Settings for real flight data</div>'}
+<div style="font-size: 10px; color: #4caf50; margin-top: 5px; text-align: center;">✅ Travelpayouts API key loaded - using real flight data</div>
                             </div>
                             
                             ${dest.flights ? `
@@ -866,9 +866,9 @@ ${!localStorage.getItem('travelpayouts_api_key') ? '<div style="font-size: 10px;
         // Try to load saved API keys from localStorage
         window.onload = function() {
             const orsKey = localStorage.getItem('ors_api_key');
-            const travelpayoutsKey = localStorage.getItem('travelpayouts_api_key');
+            const travelpayoutsKey = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded
             if (orsKey) document.getElementById('orsKey').value = orsKey;
-            if (travelpayoutsKey) document.getElementById('travelpayoutsKey').value = travelpayoutsKey;
+            document.getElementById('travelpayoutsKey').value = '************ (hardcoded)';
             
             // Auto-run on load
             updateData();
@@ -888,7 +888,7 @@ ${!localStorage.getItem('travelpayouts_api_key') ? '<div style="font-size: 10px;
             modal.classList.add('active');
             // Load current values
             document.getElementById('modalOrsKey').value = localStorage.getItem('ors_api_key') || '';
-            document.getElementById('modalTravelpayoutsKey').value = localStorage.getItem('travelpayouts_api_key') || '';
+            document.getElementById('modalTravelpayoutsKey').value = 'b853ec919216185cef9240a0fec47a87'; // Hardcoded
             document.getElementById('modalRadius').value = document.getElementById('radius').value;
             document.getElementById('modalMaxDests').value = document.getElementById('maxDests').value;
         }
