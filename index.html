@@ -684,7 +684,7 @@
             }
             
             // Flight analysis - use real API data
-            let flightA, flightB;
+            let flightA;
             
             // Try to get real flight data from Travelpayouts API
             const realFlightA = await getFlightData(ORIGIN_A_AIRPORT.lat, ORIGIN_A_AIRPORT.lon, dest.airport.lat, dest.airport.lon, travelpayoutsKey);
@@ -708,7 +708,7 @@
             
             // Calculate overall fairness score
             const driveScore = calculateScore(driveA, driveB);
-            const flightScore = (flightA && flightB) ? calculateScore(flightA, flightB) : 0;
+            const flightScore = (flightA && nyFlight) ? calculateScore(flightA, nyFlight) : 0;
             
             const overallScore = Math.max(driveScore, flightScore);
             
