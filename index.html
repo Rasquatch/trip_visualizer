@@ -445,20 +445,37 @@
             { code: "ISP", name: "Long Island MacArthur (Islip)", lat: 40.7952, lon: -73.1024 }
         ];
         
-        // Attractions and scenic destinations with appropriate airports
+        // Comprehensive mix of cities, attractions, and scenic destinations
         const DESTINATIONS = [
+            // Virginia Attractions
             { name: "Luray Caverns, Virginia", lat: 38.6646, lon: -78.4594, state: "VA", airport: { code: "IAD", name: "Washington Dulles International", lat: 38.9445, lon: -77.4558 } },
-            { name: "Shenandoah National Park, VA", lat: 38.5967, lon: -78.4359, state: "VA", airport: { code: "IAD", name: "Washington Dulles International", lat: 38.9445, lon: -77.4558 } },
-            { name: "Gettysburg, Pennsylvania", lat: 39.8309, lon: -77.2311, state: "PA", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
-            { name: "Hershey, Pennsylvania", lat: 40.2716, lon: -76.6509, state: "PA", airport: { code: "MDT", name: "Harrisburg International", lat: 40.1935, lon: -76.7633 } },
-            { name: "Philadelphia Historic District, PA", lat: 39.9526, lon: -75.1652, state: "PA", airport: { code: "PHL", name: "Philadelphia International", lat: 39.8729, lon: -75.2437 } },
-            { name: "Inner Harbor, Baltimore, MD", lat: 39.2847, lon: -76.6142, state: "MD", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
-            { name: "National Mall, Washington, DC", lat: 38.8899, lon: -77.0233, state: "DC", airport: { code: "DCA", name: "Ronald Reagan Washington National", lat: 38.8512, lon: -77.0402 } },
-            { name: "Colonial Williamsburg, Virginia", lat: 37.2707, lon: -76.7070, state: "VA", airport: { code: "PHF", name: "Newport News/Williamsburg International", lat: 37.1305, lon: -76.4940 } },
-            { name: "Virginia Beach, Virginia", lat: 36.8529, lon: -75.9780, state: "VA", airport: { code: "ORF", name: "Norfolk International", lat: 36.9044, lon: -76.1922 } },
+            { name: "Virginia Beach", lat: 36.8529, lon: -75.9780, state: "VA", airport: { code: "ORF", name: "Norfolk International", lat: 36.9044, lon: -76.1922 } },
+            { name: "Colonial Williamsburg", lat: 37.2707, lon: -76.7070, state: "VA", airport: { code: "PHF", name: "Newport News/Williamsburg International", lat: 37.1305, lon: -76.4940 } },
             { name: "Mount Vernon, Virginia", lat: 38.7072, lon: -77.0869, state: "VA", airport: { code: "DCA", name: "Ronald Reagan Washington National", lat: 38.8512, lon: -77.0402 } },
             { name: "Assateague Island, Maryland", lat: 38.2399, lon: -75.0844, state: "MD", airport: { code: "ESN", name: "Salisbury-Ocean City Wicomico Regional", lat: 38.3409, lon: -75.5113 } },
-            { name: "Pocono Mountains, Pennsylvania", lat: 41.0760, lon: -75.4135, state: "PA", airport: { code: "AVP", name: "Scranton/Wilkes-Barre International", lat: 41.3386, lon: -75.7244 } }
+            
+            // National Parks & Nature
+            { name: "Shenandoah National Park, Virginia", lat: 38.5967, lon: -78.4359, state: "VA", airport: { code: "IAD", name: "Washington Dulles International", lat: 38.9445, lon: -77.4558 } },
+            { name: "Great Smoky Mountains, Tennessee", lat: 35.6532, lon: -83.9073, state: "TN", airport: { code: "TYS", name: "McGhee Tyson Airport", lat: 35.6087, lon: -83.9964 } },
+            { name: "Blue Ridge Parkway, Virginia", lat: 37.8957, lon: -79.4824, state: "VA", airport: { code: "ROA", name: "Roanoke-Blacksburg Regional", lat: 37.3255, lon: -79.9754 } },
+            
+            // Pennsylvania Cities & Attractions
+            { name: "Gettysburg, Pennsylvania", lat: 39.8309, lon: -77.2311, state: "PA", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
+            { name: "Hershey, Pennsylvania", lat: 40.2716, lon: -76.6509, state: "PA", airport: { code: "MDT", name: "Harrisburg International", lat: 40.1935, lon: -76.7633 } },
+            { name: "Philadelphia Historic District, Pennsylvania", lat: 39.9526, lon: -75.1652, state: "PA", airport: { code: "PHL", name: "Philadelphia International", lat: 39.8729, lon: -75.2437 } },
+            { name: "Pittsburgh, Pennsylvania", lat: 40.4406, lon: -79.9959, state: "PA", airport: { code: "PIT", name: "Pittsburgh International", lat: 40.4915, lon: -80.2329 } },
+            { name: "Pocono Mountains, Pennsylvania", lat: 41.0760, lon: -75.4135, state: "PA", airport: { code: "AVP", name: "Scranton/Wilkes-Barre International", lat: 41.3386, lon: -75.7244 } },
+            
+            // Maryland & DC Area
+            { name: "Inner Harbor, Baltimore, MD", lat: 39.2847, lon: -76.6142, state: "MD", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
+            { name: "National Mall, Washington, DC", lat: 38.8899, lon: -77.0369, state: "DC", airport: { code: "DCA", name: "Ronald Reagan Washington National", lat: 38.8512, lon: -77.0402 } },
+            { name: "Annapolis, Maryland", lat: 38.9741, lon: -76.4951, state: "MD", airport: { code: "BWI", name: "Baltimore-Washington International", lat: 39.1774, lon: -76.6684 } },
+            
+            // North Carolina (beyond original locations)
+            { name: "Asheville, North Carolina", lat: 35.5951, lon: -82.5515, state: "NC", airport: { code: "AVL", name: "Asheville Regional Airport", lat: 35.4362, lon: -82.5553 } },
+            { name: "Charlotte, North Carolina", lat: 35.2271, lon: -80.8431, state: "NC", airport: { code: "CLT", name: "Charlotte Douglas International", lat: 35.2143, lon: -80.9500 } },
+            { name: "Wilmington, North Carolina", lat: 34.2257, lon: -77.9447, state: "NC", airport: { code: "ILM", name: "Wilmington International", lat: 34.2767, lon: -77.8105 } },
+            { name: "Outer Banks, North Carolina", lat: 34.6881, lon: -76.1305, state: "NC", airport: { code: "EWN", name: "Northeastern Regional", lat: 36.4976, lon: -75.9478 } }
         ];
 
         // Calculate distance between two points (Haversine formula)
